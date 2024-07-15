@@ -83,7 +83,7 @@ fn generate_password_no_special_chars() {
     let length = 16;
     let password = generate_password(length, false, &ComplexityEnum::Complex);
 
-    assert!(!password.chars().any(|c| "!@#$%^&*()_+-=[]{}|;:,.<>?".contains(c))); /// @todo: fail sometimes
+    assert!(!password.chars().any(|c| "!@#$%^&*()_+-=[]{}|;:,.<>?".contains(c))); // @todo: fail sometimes
 }
 
 #[test]
@@ -109,7 +109,7 @@ fn generate_password_complexity_complex() {
     let password = generate_password(length, true, &ComplexityEnum::Complex);
 
     assert!(password.chars().any(|c| "abcdefghijklmnopqrstuvwxyz".contains(c)));
-    assert!(password.chars().any(|c| "ABCDEFGHIJKLMNOPQRSTUVWXYZ".contains(c))); /// @todo: fail sometimes
+    assert!(password.chars().any(|c| "ABCDEFGHIJKLMNOPQRSTUVWXYZ".contains(c))); // @todo: fail sometimes
     assert!(password.chars().any(|c| "0123456789".contains(c)));
     assert!(password.chars().any(|c| "!@#$%^&*()_+-=[]{}|;:,.<>?".contains(c)));
 }
