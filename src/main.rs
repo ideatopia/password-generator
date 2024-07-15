@@ -3,6 +3,7 @@ mod test;
 
 use std::iter;
 use clap::{Parser, ValueEnum};
+use clipboard::{ClipboardContext, ClipboardProvider};
 use rand::Rng;
 use strum_macros::{Display, EnumProperty, EnumString};
 
@@ -25,6 +26,14 @@ struct Args {
     /// Include special characters
     #[arg(short, long)]
     special: bool,
+
+    /// Hide password from terminal display [default: false]
+    #[arg(long)]
+    hide: bool,
+
+    /// Copy password to clipboard [default: false]
+    #[arg(long)]
+    copy: bool,
 }
 
 /// Complexity levels for password generation
@@ -39,9 +48,27 @@ pub enum ComplexityEnum {
 fn main() {
     let args = Args::parse();
 
-    for _ in 0..args.quantity {
+    let mut passwords_generated = 0;
+    let mut clipboard = ClipboardContext::new().unwrap(); // Initialize clipboard provider
+
+    while passwords_generated < args.quantity {
         let password = generate_password(args.length, args.special, &args.complexity);
-        println!("{}", password);
+
+        if !args.hide {
+            // Print the password
+            println!("{}", password);
+        }
+
+        if args.copy {
+            // Copy password to clipboard
+            clipboard.set_contents(password.clone()).unwrap();
+        }
+
+        passwords_generated += 1;
+    }
+
+    if args.copy {
+        println!("Password(s) copied to clipboard.");
     }
 }
 
