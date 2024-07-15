@@ -39,11 +39,6 @@ pub enum ComplexityEnum {
 fn main() {
     let args = Args::parse();
 
-    println!("special {:?}", args.special);
-    println!("complexity {:?}", args.complexity);
-    println!("count {:?}", args.quantity);
-    println!("length {:?}", args.length);
-
     for _ in 0..args.quantity {
         let password = generate_password(args.length, args.special, &args.complexity);
         println!("{}", password);
