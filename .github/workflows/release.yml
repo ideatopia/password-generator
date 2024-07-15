@@ -50,7 +50,7 @@ jobs:
         run: cargo clippy --verbose --all-features -- -D warnings -D clippy::dbg_macro
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: "${{ env.BINARY_NAME }}@${{ github.event.release.id }}${{ matrix.os == 'windows-latest' && '.exe' }}"
           path: target/release/"${{ env.BINARY_NAME }}${{ matrix.os == 'windows-latest' && '.exe' }}"
