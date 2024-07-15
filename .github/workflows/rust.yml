@@ -30,6 +30,13 @@ jobs:
         # Latest stable and MSRV. We only run checks with all features enabled
         # for the MSRV build to keep CI fast, since other configurations should also work.
         rust_version: [ stable, "1.79.0" ]
+        include:
+          - os: ubuntu-latest
+            install-deps: sudo apt install -y build-essential gcc
+          - os: windows-latest
+            install-deps: echo "No additional dependencies for Windows"
+          - os: macos-latest
+            install-deps: echo "No additional dependencies for macOS"
     steps:
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
