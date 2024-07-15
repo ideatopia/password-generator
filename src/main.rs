@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod test;
+
 use clap::Parser;
 
 /// Password Generator CLI
