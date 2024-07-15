@@ -48,6 +48,13 @@ pub enum ComplexityEnum {
 fn main() {
     let args = Args::parse();
 
+    let newline = if cfg!(target_os = "windows") {
+        "\r\n"
+    } else {
+        "\n"
+    };
+
+    let mut passwords = String::new();
     let mut passwords_generated = 0;
     let mut clipboard = ClipboardContext::new().unwrap(); // Initialize clipboard provider
 
@@ -60,14 +67,16 @@ fn main() {
         }
 
         if args.copy {
-            // Copy password to clipboard
-            clipboard.set_contents(password.clone()).unwrap();
+            passwords.push_str(&*password);
+            passwords.push_str(newline);
         }
 
         passwords_generated += 1;
     }
 
     if args.copy {
+        // Copy password to clipboard
+        clipboard.set_contents(passwords.trim().parse().unwrap()).unwrap();
         println!("Password(s) copied to clipboard.");
     }
 }
