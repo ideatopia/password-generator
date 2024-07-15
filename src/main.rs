@@ -3,7 +3,10 @@ mod test;
 
 use clap::{Parser, ValueEnum};
 use clipboard::{ClipboardContext, ClipboardProvider};
-use rand::{Rng, seq::{IteratorRandom, SliceRandom}};
+use rand::{
+    seq::{IteratorRandom, SliceRandom},
+    Rng,
+};
 use std::iter;
 use strum_macros::{Display, EnumProperty, EnumString};
 
@@ -55,10 +58,7 @@ fn main() {
     let required_length = 8;
 
     if args.length < required_length {
-        panic!(
-            "Password length must be at least {}.",
-            required_length
-        );
+        panic!("Password length must be at least {}.", required_length);
     }
 
     let newline = if cfg!(target_os = "windows") {
