@@ -6,3 +6,4 @@
 - [ ] evaluate password strength (if user entered his own password)
 - [ ] generated bin for linux, windows and darwin (mac) using GitHub Action
 - [ ] check if password is already leaked like [Pwned Passwords](https://haveibeenpwned.com/Passwords)
+- [ ] fix fails and remove todos from test.rs
