@@ -1,9 +1,10 @@
 #[cfg(test)]
 mod test;
 
+use std::cmp::PartialEq;
 use clap::{Parser, ValueEnum};
 use clipboard::{ClipboardContext, ClipboardProvider};
-use rand::Rng;
+use rand::{Rng, seq::{IteratorRandom, SliceRandom}};
 use std::iter;
 use strum_macros::{Display, EnumProperty, EnumString};
 
@@ -113,7 +114,27 @@ pub fn generate_password(
         charset.chars().collect()
     };
 
-    iter::repeat_with(|| charset[rng.gen_range(0..charset.len())])
-        .take(length)
-        .collect()
+    let mut password: Vec<char> = Vec::new();
+
+    if matches!(complexity, ComplexityEnum::Secure | ComplexityEnum::Complex) {
+        // Select at least one character from each required category for Secure and Complex complexity
+        password.push(lowercase.chars().choose(&mut rng).unwrap());
+        password.push(uppercase.chars().choose(&mut rng).unwrap());
+        password.push(numbers.chars().choose(&mut rng).unwrap());
+    }
+
+    if use_special_chars {
+        password.push(special_chars.chars().choose(&mut rng).unwrap());
+    }
+
+    // Fill the rest of the password with random characters from the charset
+    password.extend(
+        iter::repeat_with(|| charset[rng.gen_range(0..charset.len())])
+            .take(length - password.len()),
+    );
+
+    // Shuffle the password to ensure randomness
+    password.shuffle(&mut rng);
+
+    password.iter().collect()
 }
