@@ -1,7 +1,9 @@
 #[cfg(test)]
 mod test;
 
+use std::iter;
 use clap::{Parser, ValueEnum};
+use rand::Rng;
 use strum_macros::{Display, EnumProperty, EnumString};
 
 /// Password Generator CLI
@@ -41,4 +43,35 @@ fn main() {
     println!("complexity {:?}", args.complexity);
     println!("count {:?}", args.quantity);
     println!("length {:?}", args.length);
+
+    for _ in 0..args.quantity {
+        let password = generate_password(args.length, args.special, &args.complexity);
+        println!("{}", password);
+    }
+}
+
+pub fn generate_password(length: usize, use_special_chars: bool, complexity: &ComplexityEnum) -> String {
+    let mut rng = rand::thread_rng();
+    let (lowercase, uppercase, numbers, special_chars) = (
+        "abcdefghijklmnopqrstuvwxyz",
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "0123456789",
+        "!@#$%^&*()_+-=[]{}|;:,.<>?",
+    );
+
+    let charset = match complexity {
+        ComplexityEnum::Simple => lowercase,
+        ComplexityEnum::Secure => &format!("{}{}{}", lowercase, uppercase, numbers),
+        ComplexityEnum::Complex => &format!("{}{}{}{}", lowercase, uppercase, numbers, special_chars),
+    };
+
+    let charset: Vec<char> = if use_special_chars {
+        format!("{}{}", charset, special_chars).chars().collect()
+    } else {
+        charset.chars().collect()
+    };
+
+    iter::repeat_with(|| charset[rng.gen_range(0..charset.len())])
+        .take(length)
+        .collect()
 }
