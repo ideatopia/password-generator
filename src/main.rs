@@ -12,7 +12,7 @@ struct Args {
     length: usize,
 
     /// Number of passwords to generate
-    #[arg(long, default_value_t = 1)]
+    #[arg(short, long, default_value_t = 1)]
     quantity: usize,
 
     /// Complexity: simple, secure, complex
