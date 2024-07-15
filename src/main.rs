@@ -1,7 +1,6 @@
 #[cfg(test)]
 mod test;
 
-use std::cmp::PartialEq;
 use clap::{Parser, ValueEnum};
 use clipboard::{ClipboardContext, ClipboardProvider};
 use rand::{Rng, seq::{IteratorRandom, SliceRandom}};
@@ -51,6 +50,16 @@ pub enum ComplexityEnum {
 
 fn main() {
     let args = Args::parse();
+
+    // why 8 ? 'cuz we got 8 bits
+    let required_length = 8;
+
+    if args.length < required_length {
+        panic!(
+            "Password length must be at least {}.",
+            required_length
+        );
+    }
 
     let newline = if cfg!(target_os = "windows") {
         "\r\n"
