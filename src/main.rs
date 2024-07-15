@@ -1,15 +1,18 @@
 #[cfg(test)]
 mod test;
 
-use std::iter;
 use clap::{Parser, ValueEnum};
 use clipboard::{ClipboardContext, ClipboardProvider};
 use rand::Rng;
+use std::iter;
 use strum_macros::{Display, EnumProperty, EnumString};
 
 /// Password Generator CLI
 #[derive(Parser, Debug)]
-#[command(version = "1.0", about = "Generates passwords with various complexities")]
+#[command(
+    version = "1.0",
+    about = "Generates passwords with various complexities"
+)]
 struct Args {
     /// Length of the password
     #[arg(short, long, default_value_t = 12)]
@@ -76,12 +79,18 @@ fn main() {
 
     if args.copy {
         // Copy password to clipboard
-        clipboard.set_contents(passwords.trim().parse().unwrap()).unwrap();
+        clipboard
+            .set_contents(passwords.trim().parse().unwrap())
+            .unwrap();
         println!("Password(s) copied to clipboard.");
     }
 }
 
-pub fn generate_password(length: usize, use_special_chars: bool, complexity: &ComplexityEnum) -> String {
+pub fn generate_password(
+    length: usize,
+    use_special_chars: bool,
+    complexity: &ComplexityEnum,
+) -> String {
     let mut rng = rand::thread_rng();
     let (lowercase, uppercase, numbers, special_chars) = (
         "abcdefghijklmnopqrstuvwxyz",
@@ -93,7 +102,9 @@ pub fn generate_password(length: usize, use_special_chars: bool, complexity: &Co
     let charset = match complexity {
         ComplexityEnum::Simple => lowercase,
         ComplexityEnum::Secure => &format!("{}{}{}", lowercase, uppercase, numbers),
-        ComplexityEnum::Complex => &format!("{}{}{}{}", lowercase, uppercase, numbers, special_chars),
+        ComplexityEnum::Complex => {
+            &format!("{}{}{}{}", lowercase, uppercase, numbers, special_chars)
+        }
     };
 
     let charset: Vec<char> = if use_special_chars {
