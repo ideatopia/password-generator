@@ -59,20 +59,19 @@ password_generator -l 20 -q 3 --complexity complex --hide --copy
 - Use the `--help` option to view all available command-line options and usage information.
 
 ## Todo
-- [ ] copy generated password directly into the memory (like `CTRL/CMD + C`)
-- [ ] add author to clap definition
+- [x] copy generated password directly into the memory (like `CTRL/CMD + C`)
+- [x] add author to clap definition
 - [ ] evaluate password strength (if user entered his own password)
 - [ ] generated bin for linux, windows and darwin (mac) using GitHub Action
-- [ ] check if password is already leaked like [Pwned Passwords](https://haveibeenpwned.com/Passwords)
-- [ ] fix fails and remove todos from test.rs
+- [x] ~~check if password is already leaked like [Pwned Passwords](https://haveibeenpwned.com/Passwords)~~
+[//]: # (  paid api)
+- [x] fix fails and remove todos from test.rs
 - [ ] write test for copy to clipboard
-- [ ] export generated password to 
+- [ ] format generated password output to 
   - [ ] plain text file
   - [ ] csv
   - [ ] json
-- [ ] improve random password generation
-
-  Why? Sometimes, certain tests fail (e.g., generate_password_complexity_complex) because characters are randomly selected without consideration for their composition. This can result in missing numbers or other 'required' elements. While the generated password is 'secure,' it may cause test failures.
+- [x] improve random password generation
 
 ## License
 
