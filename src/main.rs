@@ -3,7 +3,10 @@ mod test;
 
 use clap::{Parser, ValueEnum};
 use clipboard::{ClipboardContext, ClipboardProvider};
-use rand::Rng;
+use rand::{
+    seq::{IteratorRandom, SliceRandom},
+    Rng,
+};
 use std::iter;
 use strum_macros::{Display, EnumProperty, EnumString};
 
@@ -50,6 +53,13 @@ pub enum ComplexityEnum {
 
 fn main() {
     let args = Args::parse();
+
+    // why 8 ? 'cuz we got 8 bits
+    let required_length = 8;
+
+    if args.length < required_length {
+        panic!("Password length must be at least {}.", required_length);
+    }
 
     let newline = if cfg!(target_os = "windows") {
         "\r\n"
@@ -113,7 +123,27 @@ pub fn generate_password(
         charset.chars().collect()
     };
 
-    iter::repeat_with(|| charset[rng.gen_range(0..charset.len())])
-        .take(length)
-        .collect()
+    let mut password: Vec<char> = Vec::new();
+
+    if matches!(complexity, ComplexityEnum::Secure | ComplexityEnum::Complex) {
+        // Select at least one character from each required category for Secure and Complex complexity
+        password.push(lowercase.chars().choose(&mut rng).unwrap());
+        password.push(uppercase.chars().choose(&mut rng).unwrap());
+        password.push(numbers.chars().choose(&mut rng).unwrap());
+    }
+
+    if use_special_chars {
+        password.push(special_chars.chars().choose(&mut rng).unwrap());
+    }
+
+    // Fill the rest of the password with random characters from the charset
+    password.extend(
+        iter::repeat_with(|| charset[rng.gen_range(0..charset.len())])
+            .take(length - password.len()),
+    );
+
+    // Shuffle the password to ensure randomness
+    password.shuffle(&mut rng);
+
+    password.iter().collect()
 }
