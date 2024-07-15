@@ -14,8 +14,8 @@ use strum_macros::{Display, EnumProperty, EnumString};
 #[derive(Parser, Debug)]
 #[command(
     version = "1.0",
-    about = "Generates passwords with various complexities"
-    author = "ideatopia"
+    about = "Generates passwords with various complexities",
+    author = "ideatopia",
 )]
 struct Args {
     /// Length of the password [min: 8]
