@@ -16,9 +16,9 @@ struct Args {
     #[arg(short, long, default_value_t = 1)]
     quantity: usize,
 
-    /// Complexity: simple, secure, complex
-    #[arg(short, long, default_value = "secure")]
-    complexity: String,
+    /// Level of complexity
+    #[arg(short, long, default_value_t = ComplexityEnum::Secure, value_enum)]
+    complexity: ComplexityEnum,
 
     /// Include special characters
     #[arg(short, long)]
