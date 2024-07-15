@@ -67,7 +67,7 @@ fn main() {
         }
 
         if args.copy {
-            passwords.push_str(&*password);
+            passwords.push_str(&password);
             passwords.push_str(newline);
         }
 
