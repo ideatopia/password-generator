@@ -17,7 +17,7 @@ use strum_macros::{Display, EnumProperty, EnumString};
     about = "Generates passwords with various complexities"
 )]
 struct Args {
-    /// Length of the password
+    /// Length of the password [min: 8]
     #[arg(short, long, default_value_t = 12)]
     length: usize,
 
