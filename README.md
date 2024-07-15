@@ -70,6 +70,9 @@ password_generator -l 20 -q 3 --complexity complex --hide --copy
   - [ ] plain text file
   - [ ] csv
   - [ ] json
+- [ ] improve random password generation
+
+  Why? Sometimes, certain tests fail (e.g., generate_password_complexity_complex) because characters are randomly selected without consideration for their composition. This can result in missing numbers or other 'required' elements. While the generated password is 'secure,' it may cause test failures.
 
 ## License
 
