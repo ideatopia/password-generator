@@ -1,0 +1,64 @@
+name: Release to Crates.io
+
+on:
+  release:
+    types:
+      - created
+
+env:
+  RUSTFLAGS: -Dwarnings
+  CARGO_TERM_COLOR: always
+  BINARY_NAME: "password_generator"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+  release:
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-latest, windows-latest, ubuntu-latest ]
+        # Latest stable and MSRV. We only run checks with all features enabled
+        # for the MSRV build to keep CI fast, since other configurations should also work.
+        rust_version: [ stable, "1.79.0" ]
+        include:
+          - os: ubuntu-latest
+            install-deps: sudo apt install -y build-essential gcc
+          - os: windows-latest
+            install-deps: echo "No additional dependencies for Windows"
+          - os: macos-latest
+            install-deps: echo "No additional dependencies for macOS"
+
+    steps:
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust_version }}
+          components: clippy
+      - uses: actions/checkout@v4
+
+      - name: Run `cargo clippy` with no features
+        if: ${{ matrix.rust_version == 'stable' }}
+        run: cargo clippy --verbose --no-default-features -- -D warnings -D clippy::dbg_macro
+
+      - name: Run `cargo clippy` with all features
+        run: cargo clippy --verbose --all-features -- -D warnings -D clippy::dbg_macro
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: "${{ env.BINARY_NAME }}@${{ github.event.release.id }}${{ matrix.os == 'windows-latest' && '.exe' }}"
+          path: target/release/"${{ env.BINARY_NAME }}${{ matrix.os == 'windows-latest' && '.exe' }}"
+
+      - name: Notify success
+        if: success()
+        run: echo "Release process completed successfully!"
+
+      - name: Notify failure
+        if: failure()
+        run: echo "Release process failed, check logs for details."

@@ -2,6 +2,12 @@
 
 A command-line interface (CLI) tool for generating passwords with various complexities and options.
 
+<p align="center">
+    <a href="https://github.com/ideatopia/password-generator/actions/workflows/rust.yml">
+        <img src="https://github.com/ideatopia/password-generator/actions/workflows/rust.yml/badge.svg" alt="Test">
+    </a>
+</p>
+
 ## Features
 
 - Generates passwords of specified length and complexity.
