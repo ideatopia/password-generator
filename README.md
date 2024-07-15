@@ -66,7 +66,11 @@ password_generator -l 20 -q 3 --complexity complex --hide --copy
 - [ ] check if password is already leaked like [Pwned Passwords](https://haveibeenpwned.com/Passwords)
 - [ ] fix fails and remove todos from test.rs
 - [ ] write test for copy to clipboard
-- 
+- [ ] export generated password to 
+  - [ ] plain text file
+  - [ ] csv
+  - [ ] json
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
