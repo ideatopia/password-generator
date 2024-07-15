@@ -1,7 +1,8 @@
 #[cfg(test)]
 mod test;
 
-use clap::Parser;
+use clap::{Parser, ValueEnum};
+use strum_macros::{Display, EnumProperty, EnumString};
 
 /// Password Generator CLI
 #[derive(Parser, Debug)]
@@ -22,6 +23,15 @@ struct Args {
     /// Include special characters
     #[arg(short, long)]
     special: bool,
+}
+
+/// Complexity levels for password generation
+#[derive(Debug, EnumString, Display, Clone, EnumProperty, ValueEnum, PartialEq)]
+#[strum(serialize_all = "lowercase")]
+pub enum ComplexityEnum {
+    Simple,
+    Secure,
+    Complex,
 }
 
 fn main() {
