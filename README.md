@@ -14,6 +14,7 @@ A command-line interface (CLI) tool for generating passwords with various comple
 - Supports simple, secure, and complex password types.
 - Includes options to include special characters and hide passwords from display.
 - Copies generated passwords to the clipboard if requested.
+- Export password(s) text plain text file.
 
 ## Usage
 
