@@ -8,6 +8,7 @@ env:
   RUSTFLAGS: -Dwarnings
   CARGO_TERM_COLOR: always
   BINARY_NAME: "pwdgen"
+  OS_NAME: ${${{ matrix.os }}%-latest}
 
 jobs:
   release:
@@ -48,7 +49,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "${{ env.BINARY_NAME }}-${{ github.event.release.tag_name }}-${{ matrix.os }}${{ matrix.asset_extension }}"
+          name: "${{ env.BINARY_NAME }}-${{ github.event.release.tag_name }}-${{ env.OS_NAME }}${{ matrix.asset_extension }}"
           path: target/release/${{ env.BINARY_NAME }}${{ matrix.asset_extension }}
 
       - name: Upload Release Asset
@@ -58,7 +59,7 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./target/release/${{ env.BINARY_NAME }}${{ matrix.asset_extension }}
-          asset_name: "${{ env.BINARY_NAME }}-${{ github.event.release.tag_name }}-${{ matrix.os }}${{ matrix.asset_extension }}"
+          asset_name: "${{ env.BINARY_NAME }}-${{ github.event.release.tag_name }}-${{ env.OS_NAME }}${{ matrix.asset_extension }}"
           asset_content_type: ${{ matrix.asset_content_type }}
 
       - name: Notify success
