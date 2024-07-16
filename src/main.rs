@@ -2,7 +2,7 @@
 mod test;
 
 use clap::{Parser, ValueEnum};
-use clipboard::{ClipboardContext, ClipboardProvider};
+use cli_clipboard::{ClipboardContext, ClipboardProvider};
 use rand::{
     seq::{IteratorRandom, SliceRandom},
     Rng,
