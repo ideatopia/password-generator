@@ -256,6 +256,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ideatopia-password_generator"
+version = "1.0.0"
+dependencies = [
+ "clap",
+ "cli-clipboard",
+ "rand",
+ "strum",
+ "strum_macros",
+]
+
+[[package]]
 name = "indexmap"
 version = "2.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -384,17 +395,6 @@ checksum = "29d73ba8daf8fac13b0501d1abeddcfe21ba7401ada61a819144b6c2a4f32209"
 dependencies = [
  "libc",
  "windows-sys",
-]
-
-[[package]]
-name = "password_generator"
-version = "0.1.0"
-dependencies = [
- "clap",
- "cli-clipboard",
- "rand",
- "strum",
- "strum_macros",
 ]
 
 [[package]]

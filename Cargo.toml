@@ -1,11 +1,14 @@
 [package]
-name = "password_generator"
-version = "0.1.0"
+name = "ideatopia-password_generator"
+version = "1.0.0"
 edition = "2021"
+authors = ["ideatopia <https://githubcom/ideatopia>", "Judicael AHYI <https://githubcom/ludndev>"]
 description = "Generates passwords with various complexities"
-keywords = ["rust", "greeting", "hello"]
+keywords = ["cli", "password", "generator", "security", "utility"]
 license-file = "LICENSE"
-repository = "https://github.com/ideatopia/password-generator"
+repository = "https://github.com/ideatopia/ideatopia-password-generator"
+documentation = "https://docs.rs/ideatopia-password-generator"
+homepage = "https://crates.io/crates/ideatopia-password-generator"
 
 [dependencies]
 clap = { version = "4.5.9", features = ["derive"] }
