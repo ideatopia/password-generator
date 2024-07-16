@@ -62,7 +62,7 @@ chmod +x pwdgen
 ```
 demo@ideatopia:~$ pwdgen -h
 
-Password Generator 1.0.0
+Password Generator 1.0.1
  Generates passwords with various complexities
  by ideatopia https://github.com/ideatopia
 
@@ -76,6 +76,7 @@ Options:
       --hide                     Hide password from terminal display
       --copy                     Copy password to clipboard
       --export <EXPORT>          Export's file path
+      --update                   Self update from latest release
   -h, --help                     Print help
   -V, --version                  Print version
 ```
