@@ -41,6 +41,7 @@ Options:
   -s, --special                  Include special characters
       --hide                     Hide password from terminal display [default: false]
       --copy                     Copy password to clipboard [default: false]
+      --export <EXPORT>          Export's file path
   -h, --help                     Print help
   -V, --version                  Print version
 ```
@@ -57,6 +58,12 @@ Generate 3 complex passwords of length 20, hide them from display, and copy to c
 
 ```bash
 password_generator -l 20 -q 3 --complexity complex --hide --copy
+```
+
+Generate 5 complex passwords of length 20, hide them from display, and export to passwords.txt:
+
+```bash
+password_generator -l 20 -q 5 --complexity complex --hide --export passwords.txt
 ```
 
 ### Notes
