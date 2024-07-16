@@ -6,7 +6,7 @@ authors = ["ideatopia <https://githubcom/ideatopia>", "Judicael AHYI <https://gi
 description = "Generates passwords with various complexities"
 keywords = ["cli", "password", "generator", "security", "utility"]
 license-file = "LICENSE"
-repository = "https://github.com/ideatopia/ideatopia-password-generator"
+repository = "https://github.com/ideatopia/password-generator"
 documentation = "https://docs.rs/ideatopia-password-generator"
 homepage = "https://crates.io/crates/ideatopia-password-generator"
 
