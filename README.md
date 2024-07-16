@@ -64,21 +64,6 @@ password_generator -l 20 -q 3 --complexity complex --hide --copy
 - Ensure your system supports clipboard operations for the `--copy` option to work properly.
 - Use the `--help` option to view all available command-line options and usage information.
 
-## Todo
-- [x] copy generated password directly into the memory (like `CTRL/CMD + C`)
-- [x] add author to clap definition
-- [ ] evaluate password strength (if user entered his own password)
-- [x] generated bin for linux, windows and darwin (mac) using GitHub Action
-- [x] ~~check if password is already leaked like [Pwned Passwords](https://haveibeenpwned.com/Passwords)~~
-[//]: # (  paid api)
-- [x] fix fails and remove todos from test.rs
-- [ ] write test for copy to clipboard
-- [x] format generated password output to 
-  - [x] plain text file
-  - [ ] csv
-  - [ ] json
-- [x] improve random password generation
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
