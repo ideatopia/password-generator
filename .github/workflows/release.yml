@@ -8,7 +8,6 @@ env:
   RUSTFLAGS: -Dwarnings
   CARGO_TERM_COLOR: always
   BINARY_NAME: "pwdgen"
-  OS_NAME: ${${{ matrix.os }}%-latest}
 
 jobs:
   release:
@@ -19,12 +18,15 @@ jobs:
         rust_version: [stable]
         include:
           - os: macos-latest
+            os_name: "macos"
             asset_extension: ""
             asset_content_type: application/octet-stream
           - os: windows-latest
+            os_name: "windows"
             asset_extension: ".exe"
             asset_content_type: application/octet-stream
           - os: ubuntu-latest
+            os_name: "ubuntu"
             asset_extension: ""
             asset_content_type: application/octet-stream
 
@@ -49,7 +51,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "${{ env.BINARY_NAME }}-${{ github.event.release.tag_name }}-${{ env.OS_NAME }}${{ matrix.asset_extension }}"
+          name: "${{ env.BINARY_NAME }}-${{ github.event.release.tag_name }}-${{ env.BINARY_NAME }}-${{ matrix.os_name }}${{ matrix.asset_extension }}"
           path: target/release/${{ env.BINARY_NAME }}${{ matrix.asset_extension }}
 
       - name: Upload Release Asset
@@ -59,7 +61,7 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./target/release/${{ env.BINARY_NAME }}${{ matrix.asset_extension }}
-          asset_name: "${{ env.BINARY_NAME }}-${{ env.OS_NAME }}${{ matrix.asset_extension }}"
+          asset_name: "${{ env.BINARY_NAME }}-${{ matrix.os_name }}${{ matrix.asset_extension }}"
           asset_content_type: ${{ matrix.asset_content_type }}
 
       - name: Notify success
