@@ -1,13 +1,16 @@
 #[cfg(test)]
 mod test;
 
+use std::fs::File;
 use clap::{Parser, ValueEnum};
 use cli_clipboard::{ClipboardContext, ClipboardProvider};
 use rand::{
     seq::{IteratorRandom, SliceRandom},
     Rng,
 };
+use std::io::Write;
 use std::iter;
+use std::path::Path;
 use strum_macros::{Display, EnumProperty, EnumString};
 
 /// Password Generator CLI
@@ -41,6 +44,10 @@ struct Args {
     /// Copy password to clipboard [default: false]
     #[arg(long)]
     copy: bool,
+
+    /// Export's file path
+    #[arg(long, default_value = "")]
+    export: String,
 }
 
 /// Complexity levels for password generation
@@ -80,7 +87,7 @@ fn main() {
             println!("{}", password);
         }
 
-        if args.copy {
+        if args.copy || !args.export.is_empty() {
             passwords.push_str(&password);
             passwords.push_str(newline);
         }
@@ -88,10 +95,28 @@ fn main() {
         passwords_generated += 1;
     }
 
+    let passwords_string: String = passwords.trim().parse().unwrap();
+
+    // Ensure the export path is not empty
+    if !args.export.is_empty() {
+        // Check if the file already exists
+        if Path::new(&args.export).exists() {
+            eprintln!("File already exists: {}", &args.export);
+            std::process::exit(1);
+        }
+
+        let mut file = File::create(&args.export).expect("Failed to create file");
+
+        match file.write_all(passwords_string.as_bytes()) {
+            Ok(_) => println!("Password(s) exported to {}", args.export),
+            Err(e) => eprintln!("Failed to export passwords: {}", e),
+        }
+    }
+
     if args.copy {
         // Copy password to clipboard
         clipboard
-            .set_contents(passwords.trim().parse().unwrap())
+            .set_contents(passwords_string)
             .unwrap();
         println!("Password(s) copied to clipboard.");
     }
