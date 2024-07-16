@@ -16,9 +16,21 @@ use strum_macros::{Display, EnumProperty, EnumString};
 /// Password Generator CLI
 #[derive(Parser, Debug)]
 #[command(
-    version = "1.0",
+    name = "Password Generator",
+    version = "1.0.0",
     about = "Generates passwords with various complexities",
     author = "ideatopia"
+)]
+#[command(
+    help_template = "\
+{before-help}{name} {version}
+ {about}
+ by {author} https://github.com/ideatopia
+
+{usage-heading} {usage}
+
+{all-args}{after-help}
+"
 )]
 struct Args {
     /// Length of the password [min: 8]
