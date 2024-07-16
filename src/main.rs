@@ -7,7 +7,10 @@ use rand::{
     seq::{IteratorRandom, SliceRandom},
     Rng,
 };
+use std::fs::File;
+use std::io::Write;
 use std::iter;
+use std::path::Path;
 use strum_macros::{Display, EnumProperty, EnumString};
 
 /// Password Generator CLI
@@ -41,6 +44,10 @@ struct Args {
     /// Copy password to clipboard [default: false]
     #[arg(long)]
     copy: bool,
+
+    /// Export's file path
+    #[arg(long, default_value = "")]
+    export: String,
 }
 
 /// Complexity levels for password generation
@@ -75,24 +82,38 @@ fn main() {
     while passwords_generated < args.quantity {
         let password = generate_password(args.length, args.special, &args.complexity);
 
-        if !args.hide {
-            // Print the password
-            println!("{}", password);
-        }
-
-        if args.copy {
-            passwords.push_str(&password);
-            passwords.push_str(newline);
-        }
+        passwords.push_str(&password);
+        passwords.push_str(newline);
 
         passwords_generated += 1;
     }
 
+    let passwords_string: String = passwords.trim().parse().unwrap();
+
+    if !args.hide {
+        // Print the password(s)
+        println!("{}", passwords_string);
+    }
+
+    // Ensure the export path is not empty
+    if !args.export.is_empty() {
+        // Check if the file already exists
+        if Path::new(&args.export).exists() {
+            eprintln!("File already exists: {}", &args.export);
+            std::process::exit(1);
+        }
+
+        let mut file = File::create(&args.export).expect("Failed to create file");
+
+        match file.write_all(passwords_string.as_bytes()) {
+            Ok(_) => println!("Password(s) exported to {}", args.export),
+            Err(e) => eprintln!("Failed to export passwords: {}", e),
+        }
+    }
+
     if args.copy {
         // Copy password to clipboard
-        clipboard
-            .set_contents(passwords.trim().parse().unwrap())
-            .unwrap();
+        clipboard.set_contents(passwords_string).unwrap();
         println!("Password(s) copied to clipboard.");
     }
 }

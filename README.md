@@ -41,6 +41,7 @@ Options:
   -s, --special                  Include special characters
       --hide                     Hide password from terminal display [default: false]
       --copy                     Copy password to clipboard [default: false]
+      --export <EXPORT>          Export's file path
   -h, --help                     Print help
   -V, --version                  Print version
 ```
@@ -59,25 +60,16 @@ Generate 3 complex passwords of length 20, hide them from display, and copy to c
 password_generator -l 20 -q 3 --complexity complex --hide --copy
 ```
 
+Generate 5 complex passwords of length 20, hide them from display, and export to passwords.txt:
+
+```bash
+password_generator -l 20 -q 5 --complexity complex --hide --export passwords.txt
+```
+
 ### Notes
 
 - Ensure your system supports clipboard operations for the `--copy` option to work properly.
 - Use the `--help` option to view all available command-line options and usage information.
-
-## Todo
-- [x] copy generated password directly into the memory (like `CTRL/CMD + C`)
-- [x] add author to clap definition
-- [ ] evaluate password strength (if user entered his own password)
-- [ ] generated bin for linux, windows and darwin (mac) using GitHub Action
-- [x] ~~check if password is already leaked like [Pwned Passwords](https://haveibeenpwned.com/Passwords)~~
-[//]: # (  paid api)
-- [x] fix fails and remove todos from test.rs
-- [ ] write test for copy to clipboard
-- [ ] format generated password output to 
-  - [ ] plain text file
-  - [ ] csv
-  - [ ] json
-- [x] improve random password generation
 
 ## License
 
