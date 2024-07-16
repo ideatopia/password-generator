@@ -1,13 +1,13 @@
 #[cfg(test)]
 mod test;
 
-use std::fs::File;
 use clap::{Parser, ValueEnum};
 use cli_clipboard::{ClipboardContext, ClipboardProvider};
 use rand::{
     seq::{IteratorRandom, SliceRandom},
     Rng,
 };
+use std::fs::File;
 use std::io::Write;
 use std::iter;
 use std::path::Path;
@@ -113,9 +113,7 @@ fn main() {
 
     if args.copy {
         // Copy password to clipboard
-        clipboard
-            .set_contents(passwords_string)
-            .unwrap();
+        clipboard.set_contents(passwords_string).unwrap();
         println!("Password(s) copied to clipboard.");
     }
 }
