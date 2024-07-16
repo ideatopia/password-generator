@@ -538,7 +538,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ideatopia-password_generator"
+name = "ideatopia-password-generator"
 version = "1.0.1"
 dependencies = [
  "clap",
