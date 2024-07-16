@@ -21,8 +21,7 @@ use strum_macros::{Display, EnumProperty, EnumString};
     about = "Generates passwords with various complexities",
     author = "ideatopia"
 )]
-#[command(
-    help_template = "\
+#[command(help_template = "\
 {before-help}{name} {version}
  {about}
  by {author} https://github.com/ideatopia
@@ -30,8 +29,7 @@ use strum_macros::{Display, EnumProperty, EnumString};
 {usage-heading} {usage}
 
 {all-args}{after-help}
-"
-)]
+")]
 struct Args {
     /// Length of the password [min: 8]
     #[arg(short, long, default_value_t = 12)]

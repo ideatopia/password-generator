@@ -23,29 +23,59 @@ A command-line interface (CLI) tool for generating passwords with various comple
 
 ### Installation
 
+#### Build from source
+
 Clone the repository and build the project using Cargo:
 
 ```bash
 git clone https://github.com/ideatopia/password-generator
-cd password_generator
+cd password-generator
 cargo build --release
+```
+
+#### Ready-to-go
+
+Download binaries according to your system
+
+- Windows
+```bash
+curl -LO https://github.com/ideatopia/password-generator/releases/latest/download/pwdgen-windows.exe -o pwdgen
+pwdgen -h
+```
+
+- Ubuntu
+```bash
+curl -LO https://github.com/ideatopia/password-generator/releases/latest/download/pwdgen-ubuntu -o pwdgen
+chmod +x pwdgen
+./pwdgen -h
+```
+
+- MacOS
+```bash
+curl -LO https://github.com/ideatopia/password-generator/releases/latest/download/pwdgen-macos -o pwdgen
+chmod +x pwdgen
+./pwdgen -h
 ```
 
 ### Command-line Options
 
 ```
-Generates passwords with various complexities
+demo@ideatopia:~$ pwdgen -h
 
-Usage: password_generator [OPTIONS]
+Password Generator 1.0.0
+ Generates passwords with various complexities
+ by ideatopia https://github.com/ideatopia
+
+Usage: pwdgen [OPTIONS]
 
 Options:
-  -l, --length <LENGTH>          Length of the password [default: 12]
+  -l, --length <LENGTH>          Length of the password [min: 8] [default: 12]
   -q, --quantity <QUANTITY>      Number of passwords to generate [default: 1]
   -c, --complexity <COMPLEXITY>  Level of complexity [default: secure] [possible values: simple, secure, complex]
   -s, --special                  Include special characters
       --hide                     Hide password from terminal display [default: false]
       --copy                     Copy password to clipboard [default: false]
-      --export <EXPORT>          Export's file path
+      --export <EXPORT>          Export's file path [default: ]
   -h, --help                     Print help
   -V, --version                  Print version
 ```
@@ -55,19 +85,19 @@ Options:
 Generate a secure password of length 16 with special characters and copy it to clipboard:
 
 ```bash
-password_generator -l 16 --complexity secure --special --copy
+pwdgen -l 16 --complexity secure --special --copy
 ```
 
 Generate 3 complex passwords of length 20, hide them from display, and copy to clipboard:
 
 ```bash
-password_generator -l 20 -q 3 --complexity complex --hide --copy
+pwdgen -l 20 -q 3 --complexity complex --hide --copy
 ```
 
 Generate 5 complex passwords of length 20, hide them from display, and export to passwords.txt:
 
 ```bash
-password_generator -l 20 -q 5 --complexity complex --hide --export passwords.txt
+pwdgen -l 20 -q 5 --complexity complex --hide --export passwords.txt
 ```
 
 ### Notes
