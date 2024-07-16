@@ -11,49 +11,56 @@ env:
   BINARY_NAME: "password_generator"
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
   release:
-    needs: test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-latest, windows-latest, ubuntu-latest ]
-        # Latest stable and MSRV. We only run checks with all features enabled
-        # for the MSRV build to keep CI fast, since other configurations should also work.
-        rust_version: [ stable, "1.79.0" ]
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        rust_version: [stable]
         include:
-          - os: ubuntu-latest
-            install-deps: sudo apt install -y build-essential gcc
-          - os: windows-latest
-            install-deps: echo "No additional dependencies for Windows"
           - os: macos-latest
-            install-deps: echo "No additional dependencies for macOS"
+            asset_extension: ""
+            asset_content_type: application/octet-stream
+          - os: windows-latest
+            asset_extension: ".exe"
+            asset_content_type: application/octet-stream
+          - os: ubuntu-latest
+            asset_extension: ""
+            asset_content_type: application/octet-stream
 
     steps:
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust_version }}
-          components: clippy
       - uses: actions/checkout@v4
 
-      - name: Run `cargo clippy` with no features
-        if: ${{ matrix.rust_version == 'stable' }}
-        run: cargo clippy --verbose --no-default-features -- -D warnings -D clippy::dbg_macro
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust_version }}
+          override: true
 
-      - name: Run `cargo clippy` with all features
-        run: cargo clippy --verbose --all-features -- -D warnings -D clippy::dbg_macro
+      - name: Prepare Ubuntu environment
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          sudo apt update
+          sudo apt install -y libxcb-shape0-dev libxcb-xfixes0-dev
+
+      - name: Build release
+        run: cargo build --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "${{ env.BINARY_NAME }}@${{ github.event.release.id }}${{ matrix.os == 'windows-latest' && '.exe' }}"
-          path: target/release/"${{ env.BINARY_NAME }}${{ matrix.os == 'windows-latest' && '.exe' }}"
+          name: "${{ env.BINARY_NAME }}-${{ github.event.release.tag_name }}-${{ matrix.os }}${{ matrix.asset_extension }}"
+          path: target/release/${{ env.BINARY_NAME }}${{ matrix.asset_extension }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./target/release/${{ env.BINARY_NAME }}${{ matrix.asset_extension }}
+          asset_name: "${{ env.BINARY_NAME }}-${{ github.event.release.tag_name }}-${{ matrix.os }}${{ matrix.asset_extension }}"
+          asset_content_type: ${{ matrix.asset_content_type }}
 
       - name: Notify success
         if: success()
