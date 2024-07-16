@@ -4,7 +4,11 @@ A command-line interface (CLI) tool for generating passwords with various comple
 
 <p align="center">
     <a href="https://github.com/ideatopia/password-generator/actions/workflows/rust.yml">
-        <img src="https://github.com/ideatopia/password-generator/actions/workflows/rust.yml/badge.svg" alt="Test">
+        <img src="https://github.com/ideatopia/password-generator/actions/workflows/rust.yml/badge.svg" alt="rust.yml">
+    </a>
+
+    <a href="https://github.com/ideatopia/password-generator/actions/workflows/release.yml">
+        <img src="https://github.com/ideatopia/password-generator/actions/workflows/release.yml/badge.svg" alt="release.yml">
     </a>
 </p>
 
@@ -14,6 +18,7 @@ A command-line interface (CLI) tool for generating passwords with various comple
 - Supports simple, secure, and complex password types.
 - Includes options to include special characters and hide passwords from display.
 - Copies generated passwords to the clipboard if requested.
+- Export password(s) text plain text file.
 
 ## Usage
 
