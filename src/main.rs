@@ -19,7 +19,7 @@ use strum_macros::{Display, EnumProperty, EnumString};
 #[derive(Parser, Debug)]
 #[command(
     name = "Password Generator",
-    version = "1.0.0",
+    version = "1.0.1",
     about = "Generates passwords with various complexities",
     author = "ideatopia"
 )]
