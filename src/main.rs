@@ -7,10 +7,12 @@ use rand::{
     seq::{IteratorRandom, SliceRandom},
     Rng,
 };
+use self_update::backends::github::Update;
 use std::fs::File;
 use std::io::Write;
-use std::iter;
 use std::path::Path;
+use std::process::Command;
+use std::{env, iter};
 use strum_macros::{Display, EnumProperty, EnumString};
 
 /// Password Generator CLI
@@ -58,6 +60,10 @@ struct Args {
     /// Export's file path
     #[arg(long, default_value = "", hide_default_value = true)]
     export: String,
+
+    /// Self update from latest release
+    #[arg(long)]
+    update: bool,
 }
 
 /// Complexity levels for password generation
@@ -71,6 +77,10 @@ pub enum ComplexityEnum {
 
 fn main() {
     let args = Args::parse();
+
+    if args.update {
+        self_update().expect("Unable to update the binary. Try from project's GitHub repository");
+    }
 
     // why 8 ? 'cuz we got 8 bits
     let required_length = 8;
@@ -87,7 +97,6 @@ fn main() {
 
     let mut passwords = String::new();
     let mut passwords_generated = 0;
-    let mut clipboard = ClipboardContext::new().unwrap(); // Initialize clipboard provider
 
     while passwords_generated < args.quantity {
         let password = generate_password(args.length, args.special, &args.complexity);
@@ -122,9 +131,16 @@ fn main() {
     }
 
     if args.copy {
-        // Copy password to clipboard
-        clipboard.set_contents(passwords_string).unwrap();
-        println!("Password(s) copied to clipboard.");
+        // Check if clipboard is available
+        if let Ok(mut ctx) = ClipboardContext::new() {
+            // Copy password to clipboard or fail
+            match ctx.set_contents(passwords_string.to_owned()) {
+                Ok(_) => println!("Password(s) copied to clipboard."),
+                Err(e) => eprintln!("Failed to copy to clipboard: {}", e),
+            }
+        } else {
+            eprintln!("Clipboard is not available on this system.");
+        }
     }
 }
 
@@ -178,4 +194,48 @@ pub fn generate_password(
     password.shuffle(&mut rng);
 
     password.iter().collect()
+}
+
+pub fn self_update() -> Result<(), Box<dyn std::error::Error>> {
+    let os_type = env::consts::OS;
+    let repo_owner = "ideatopia";
+    let repo_name = "password-generator";
+
+    let asset_name = match os_type {
+        "windows" => "pwdgen-windows.exe",
+        "linux" => "pwdgen-ubuntu",
+        "macos" => "pwdgen-macos",
+        _ => return Err("Unsupported operating system".into()),
+    };
+
+    let bin_name = match os_type {
+        "windows" => "pwdgen.exe",
+        _ => "pwdgen",
+    };
+
+    println!("Initiating self-update for {} system...", os_type);
+
+    let status = Update::configure()
+        .repo_owner(repo_owner)
+        .repo_name(repo_name)
+        .bin_name(bin_name)
+        .target(asset_name)
+        .show_download_progress(true)
+        .current_version(env!("CARGO_PKG_VERSION"))
+        .build()?
+        .update()?;
+
+    if status.updated() {
+        println!("Update successful!");
+        println!("New version: {}", status.version());
+
+        // Restart the application
+        let args: Vec<String> = env::args().collect();
+        let _ = Command::new(&args[0]).arg("-h").spawn();
+        std::process::exit(0);
+    } else {
+        println!("No update available. Current version is up to date.");
+    }
+
+    Ok(())
 }
