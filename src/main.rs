@@ -97,7 +97,6 @@ fn main() {
 
     let mut passwords = String::new();
     let mut passwords_generated = 0;
-    let mut clipboard = ClipboardContext::new().unwrap(); // Initialize clipboard provider
 
     while passwords_generated < args.quantity {
         let password = generate_password(args.length, args.special, &args.complexity);
@@ -132,9 +131,16 @@ fn main() {
     }
 
     if args.copy {
-        // Copy password to clipboard
-        clipboard.set_contents(passwords_string).unwrap();
-        println!("Password(s) copied to clipboard.");
+        // Check if clipboard is available
+        if let Ok(mut ctx) = ClipboardContext::new() {
+            // Copy password to clipboard or fail
+            match ctx.set_contents(passwords_string.to_owned()) {
+                Ok(_) => println!("Password(s) copied to clipboard."),
+                Err(e) => eprintln!("Failed to copy to clipboard: {}", e),
+            }
+        } else {
+            eprintln!("Clipboard is not available on this system.");
+        }
     }
 }
 
