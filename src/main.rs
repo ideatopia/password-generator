@@ -47,16 +47,16 @@ struct Args {
     #[arg(short, long)]
     special: bool,
 
-    /// Hide password from terminal display [default: false]
+    /// Hide password from terminal display
     #[arg(long)]
     hide: bool,
 
-    /// Copy password to clipboard [default: false]
+    /// Copy password to clipboard
     #[arg(long)]
     copy: bool,
 
     /// Export's file path
-    #[arg(long, default_value = "")]
+    #[arg(long, default_value = "", hide_default_value = true)]
     export: String,
 }
 

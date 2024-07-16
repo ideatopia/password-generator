@@ -73,9 +73,9 @@ Options:
   -q, --quantity <QUANTITY>      Number of passwords to generate [default: 1]
   -c, --complexity <COMPLEXITY>  Level of complexity [default: secure] [possible values: simple, secure, complex]
   -s, --special                  Include special characters
-      --hide                     Hide password from terminal display [default: false]
-      --copy                     Copy password to clipboard [default: false]
-      --export <EXPORT>          Export's file path [default: ]
+      --hide                     Hide password from terminal display
+      --copy                     Copy password to clipboard
+      --export <EXPORT>          Export's file path
   -h, --help                     Print help
   -V, --version                  Print version
 ```
