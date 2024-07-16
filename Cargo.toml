@@ -1,5 +1,5 @@
 [package]
-name = "ideatopia-password-generator"
+name = "ideatopia-password_generator"
 version = "1.0.2"
 edition = "2021"
 authors = ["ideatopia <https://githubcom/ideatopia>", "Judicael AHYI <https://githubcom/ludndev>"]
