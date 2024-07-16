@@ -39,20 +39,20 @@ Download binaries according to your system
 
 - Windows
 ```bash
-curl -LO https://github.com/ideatopia/password-generator/releases/latest/download/pwdgen-windows.exe -o pwdgen
+curl -L https://github.com/ideatopia/password-generator/releases/latest/download/pwdgen-windows.exe -o pwdgen
 pwdgen -h
 ```
 
 - Ubuntu
 ```bash
-curl -LO https://github.com/ideatopia/password-generator/releases/latest/download/pwdgen-ubuntu -o pwdgen
+curl -L https://github.com/ideatopia/password-generator/releases/latest/download/pwdgen-ubuntu -o pwdgen
 chmod +x pwdgen
 ./pwdgen -h
 ```
 
 - MacOS
 ```bash
-curl -LO https://github.com/ideatopia/password-generator/releases/latest/download/pwdgen-macos -o pwdgen
+curl -L https://github.com/ideatopia/password-generator/releases/latest/download/pwdgen-macos -o pwdgen
 chmod +x pwdgen
 ./pwdgen -h
 ```
