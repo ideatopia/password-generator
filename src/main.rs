@@ -82,20 +82,18 @@ fn main() {
     while passwords_generated < args.quantity {
         let password = generate_password(args.length, args.special, &args.complexity);
 
-        if !args.hide {
-            // Print the password
-            println!("{}", password);
-        }
-
-        if args.copy || !args.export.is_empty() {
-            passwords.push_str(&password);
-            passwords.push_str(newline);
-        }
+        passwords.push_str(&password);
+        passwords.push_str(newline);
 
         passwords_generated += 1;
     }
 
     let passwords_string: String = passwords.trim().parse().unwrap();
+
+    if !args.hide {
+        // Print the password(s)
+        println!("{}", passwords_string);
+    }
 
     // Ensure the export path is not empty
     if !args.export.is_empty() {
