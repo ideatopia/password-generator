@@ -539,7 +539,7 @@ dependencies = [
 
 [[package]]
 name = "ideatopia-password-generator"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "clap",
  "cli-clipboard",
