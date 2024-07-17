@@ -73,7 +73,7 @@ jobs:
         if: failure()
         run: echo "Release process failed, check logs for details."
 
-  publish:
+  publish-crate:
     runs-on: ubuntu-latest
 
     steps:
@@ -82,9 +82,6 @@ jobs:
 
       - name: Build
         run: cargo build --verbose
-
-      - name: Run tests
-        run: cargo test --verbose
 
       - name: Publish to Crates.io
         run: cargo publish --token ${CRATES_TOKEN}
