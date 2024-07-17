@@ -3,7 +3,6 @@ mod test;
 
 use clap::{Parser, ValueEnum};
 use cli_clipboard::{ClipboardContext, ClipboardProvider};
-use fastrand;
 use self_update::backends::github::Update;
 use std::fs::File;
 use std::io::Write;
