@@ -3,10 +3,7 @@ mod test;
 
 use clap::{Parser, ValueEnum};
 use cli_clipboard::{ClipboardContext, ClipboardProvider};
-use rand::{
-    seq::{IteratorRandom, SliceRandom},
-    Rng,
-};
+use fastrand;
 use self_update::backends::github::Update;
 use std::fs::File;
 use std::io::Write;
@@ -149,7 +146,6 @@ pub fn generate_password(
     use_special_chars: bool,
     complexity: &ComplexityEnum,
 ) -> String {
-    let mut rng = rand::thread_rng();
     let (lowercase, uppercase, numbers, special_chars) = (
         "abcdefghijklmnopqrstuvwxyz",
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -175,23 +171,43 @@ pub fn generate_password(
 
     if matches!(complexity, ComplexityEnum::Secure | ComplexityEnum::Complex) {
         // Select at least one character from each required category for Secure and Complex complexity
-        password.push(lowercase.chars().choose(&mut rng).unwrap());
-        password.push(uppercase.chars().choose(&mut rng).unwrap());
-        password.push(numbers.chars().choose(&mut rng).unwrap());
+        password.push(
+            lowercase
+                .chars()
+                .nth(fastrand::usize(..lowercase.len()))
+                .unwrap(),
+        );
+        password.push(
+            uppercase
+                .chars()
+                .nth(fastrand::usize(..uppercase.len()))
+                .unwrap(),
+        );
+        password.push(
+            numbers
+                .chars()
+                .nth(fastrand::usize(..numbers.len()))
+                .unwrap(),
+        );
     }
 
     if use_special_chars {
-        password.push(special_chars.chars().choose(&mut rng).unwrap());
+        password.push(
+            special_chars
+                .chars()
+                .nth(fastrand::usize(..special_chars.len()))
+                .unwrap(),
+        );
     }
 
     // Fill the rest of the password with random characters from the charset
     password.extend(
-        iter::repeat_with(|| charset[rng.gen_range(0..charset.len())])
+        iter::repeat_with(|| charset[fastrand::usize(..charset.len())])
             .take(length - password.len()),
     );
 
     // Shuffle the password to ensure randomness
-    password.shuffle(&mut rng);
+    fastrand::shuffle(&mut password);
 
     password.iter().collect()
 }
