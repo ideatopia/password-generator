@@ -18,6 +18,11 @@ self_update = "0.41.0"
 strum = { version = "0.26", features = ["derive"] }
 strum_macros = "0.26.4"
 
+[lib]
+#name = "ideatopia-password_generator"
+path = "src/lib.rs"
+crate-type = ["lib"]
+
 [[bin]]
 name = "pwdgen"
 path = "src/main.rs"
