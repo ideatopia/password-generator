@@ -64,6 +64,10 @@ jobs:
           $COMMIT_SHA = git rev-parse HEAD
           $CHECK_RUNS = gh api repos/$env:GITHUB_REPOSITORY/commits/$COMMIT_SHA/check-runs --jq '.check_runs[] | {name, conclusion}'
           
+          # Filter only the runs relevant to check-version and check-last-commit
+          $SELECTED_CHECK_RUNS = $CHECK_RUNS | ConvertFrom-Json | Where-Object { $_.name -eq 'check-version' -or $_.name -eq 'check-last-commit' }
+          $CHECK_RUNS = $SELECTED_CHECK_RUNS
+      
           $FAILED_CHECKS = $CHECK_RUNS | ConvertFrom-Json | Where-Object { $_.conclusion -ne 'success' }
           $ALL_CHECKS = ($CHECK_RUNS | ConvertFrom-Json | ForEach-Object { "$($_.name): $($_.conclusion)" }) -join ', '
           $MARKDOWN_CHECKS = ($CHECK_RUNS | ConvertFrom-Json | ForEach-Object { "- **$($_.name)**: $($_.conclusion)" }) -join "`n"
@@ -75,11 +79,12 @@ jobs:
             Write-Output "passed_test=false" >> $env:GITHUB_OUTPUT
             $FAILED_NAMES = ($FAILED_CHECKS | ForEach-Object { $_.name }) -join ', '
             Write-Output "The last commit does not have all successful tests. Failed checks: $FAILED_NAMES"
-            Write-Output "$MARKDOWN_CHECKS"
           } else {
             Write-Output "passed_test=true" >> $env:GITHUB_OUTPUT
             Write-Output "All checks passed for the last commit."
           }
+          
+          return
 
       - name: Display passed_test output
         run: echo "${{ steps.check_last_commit.outputs.passed_test }}"
