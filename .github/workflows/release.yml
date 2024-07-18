@@ -65,7 +65,7 @@ jobs:
           $CHECK_RUNS = gh api repos/$env:GITHUB_REPOSITORY/commits/$COMMIT_SHA/check-runs --jq '.check_runs[] | {name, conclusion}'
           
           # Filter only the runs relevant to check-version and check-last-commit
-          $SELECTED_CHECK_RUNS = $CHECK_RUNS | ConvertFrom-Json | Where-Object { $_.name -eq 'check-version' -or $_.name -eq 'check-last-commit' }
+          $SELECTED_CHECK_RUNS = $CHECK_RUNS | Where-Object { $_.name -eq 'check-version' -or $_.name -eq 'check-last-commit' }
           $CHECK_RUNS = $SELECTED_CHECK_RUNS
       
           $FAILED_CHECKS = $CHECK_RUNS | ConvertFrom-Json | Where-Object { $_.conclusion -ne 'success' }
