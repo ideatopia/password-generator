@@ -129,22 +129,19 @@ jobs:
             $ISSUE_BODY += "${{ needs.check-last-commit.outputs.markdown_checks }}"
           }
           
-          $ISSUE_URL = gh issue create --label bug --title "Release $($TAG_VERSION) Check Failed" --body "$ISSUE_BODY"
-          
-          if ('${{ needs.check-version.outputs.result }}' -eq 'false' && '${{ needs.check-last-commit.outputs.result }}' -eq 'false') {
-            Write-Output "status=false" >> $env:GITHUB_OUTPUT
+          if ('${{ needs.check-version.outputs.result }}' -eq 'false' || '${{ needs.check-last-commit.outputs.result }}' -eq 'false') {
+            $ISSUE_URL = gh issue create --label bug --title "Release $($TAG_VERSION) Check Failed" --body "$ISSUE_BODY"
         
             gh release delete $TAG_VERSION --yes
             Write-Output "Release has been unpublished due to check failure."
-        
-            git push origin :refs/tags/v$TAG_VERSION
-            Write-Output "Tag v$TAG_VERSION has been deleted."
+          
+            Write-Output "status=false" >> $env:GITHUB_OUTPUT
+            Write-Output "An issue has been created: $ISSUE_URL"
           
             exit 1
           }
           
           Write-Output "status=true" >> $env:GITHUB_OUTPUT
-          Write-Output "An issue has been created: $ISSUE_URL"
           
           return
 
