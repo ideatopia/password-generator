@@ -128,6 +128,8 @@ jobs:
         run: echo "Release process failed, check logs for details."
 
   publish-crate:
+    needs: [version-check, release]
+
     runs-on: ubuntu-latest
 
     steps:
