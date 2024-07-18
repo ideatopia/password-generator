@@ -140,3 +140,20 @@ jobs:
 
       - name: Run tests with all features
         run: cargo test --all-features
+
+  check:
+    if: always()
+
+    needs:
+      - rustfmt
+      - clippy
+      - test
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@release/v1
+        with:
+          allowed-failures: rustfmt
+          jobs: ${{ toJSON(needs) }}
