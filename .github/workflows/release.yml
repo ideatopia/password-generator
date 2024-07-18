@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      version_match: ${{ steps.version_check.outputs.version_match }}
+      result: ${{ steps.version_check.outputs.version_match }}
 
     steps:
       - name: Checkout
@@ -44,14 +44,12 @@ jobs:
         run: echo "${{ steps.version_check.outputs.version_match }}"
 
   check-last-commit:
-    needs: check-version
+    runs-on: ubuntu-latest
 
     outputs:
-      passed_test: ${{ steps.check_last_commit.outputs.passed_test }}
-
-    if: needs.check-version.outputs.version_match == 'true'
-
-    runs-on: ubuntu-latest
+      result: ${{ steps.check_last_commit.outputs.passed_test }}
+      checks: ${{ steps.check_last_commit.outputs.checks }}
+      markdown_checks: ${{ steps.check_last_commit.outputs.markdown_checks }}
 
     steps:
       - name: Checkout
@@ -67,6 +65,11 @@ jobs:
           $CHECK_RUNS = gh api repos/$env:GITHUB_REPOSITORY/commits/$LAST_COMMIT_SHA/check-runs --jq '.check_runs[] | {name, conclusion}'
           
           $FAILED_CHECKS = $CHECK_RUNS | ConvertFrom-Json | Where-Object { $_.conclusion -ne 'success' }
+          $ALL_CHECKS = $CHECK_RUNS | ConvertFrom-Json | ForEach-Object { "$($_.name): $($_.conclusion)" } -join ', '
+          $MARKDOWN_CHECKS = $CHECK_RUNS | ConvertFrom-Json | ForEach-Object { "- **$($_.name)**: $($_.conclusion)" } -join "`n"
+
+          Write-Output "checks=$ALL_CHECKS" >> $env:GITHUB_OUTPUT
+          Write-Output "markdown_checks=$MARKDOWN_CHECKS" >> $env:GITHUB_OUTPUT
           
           if ($FAILED_CHECKS) {
             Write-Output "passed_test=false" >> $env:GITHUB_OUTPUT
@@ -81,12 +84,13 @@ jobs:
       - name: Display passed_test output
         run: echo "${{ steps.check_last_commit.outputs.passed_test }}"
 
+      - name: Display checks output
+        run: echo "${{ steps.check_last_commit.outputs.markdown_checks }}"
+
   handle-release:
     needs: [check-version, check-last-commit]
 
-    if: |
-      always() &&
-      (needs.check-version.result == 'failure' || needs.check-last-commit.result == 'failure' || needs.check-version.outputs.version_match == 'false')
+    if: always()
 
     outputs:
       status: ${{ steps.handle.outputs.status }}
@@ -104,22 +108,30 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $TAG_VERSION = $env:GITHUB_REF -replace '^refs/tags/v', ''
+          $CHECK_RUNS = 
           
-          if ('${{ needs.check-version.outputs.version_match }}' -eq 'false') {
-            $ISSUE_BODY = "Version mismatch detected between tag and Cargo.toml."
-          } else {
-            $ISSUE_BODY = "The last commit does not have all successful tests."
+          $ISSUE_BODY = ""
+          
+          if ('${{ needs.check-version.outputs.result }}' -eq 'false') {
+            $ISSUE_BODY += "## Version\n"
+            $ISSUE_BODY += "Version mismatch detected between tag and Cargo.toml."
+            $ISSUE_BODY += " The release has been unpublished.\n"
           }
           
-          $ISSUE_BODY += " The release has been unpublished."
-          $ISSUE_URL = gh issue create --title "Release $TAG_VERSION Check Failed" --body $ISSUE_BODY --assignee @me
+          if ('${{ needs.check-last-commit.outputs.result }}' -eq 'false') {
+            $ISSUE_BODY += "## Tests\n"
+            $ISSUE_BODY += "The last commit does not have all successful tests.\n"
+            $ISSUE_BODY += "${{ needs.check-last-commit.outputs.markdown_checks }}"
+          }
+          
+          $ISSUE_URL = gh issue create --label bug --title "Release $TAG_VERSION Check Failed" --body $ISSUE_BODY --assignee "@me"
           
           if ($env:GITHUB_EVENT_NAME -eq "release") {
             Write-Output "status=false" >> $env:GITHUB_OUTPUT
-          
+        
             gh release delete $TAG_VERSION --yes
             Write-Output "Release has been unpublished due to check failure."
-          
+        
             git push origin :refs/tags/v$TAG_VERSION
             Write-Output "Tag v$TAG_VERSION has been deleted."
           }
