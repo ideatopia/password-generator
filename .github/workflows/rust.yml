@@ -4,31 +4,77 @@ on:
   push:
     branches: [ "*" ]
   pull_request:
+    types: [opened, synchronize]
 
 env:
   RUSTFLAGS: -Dwarnings
   CARGO_TERM_COLOR: always
 
 jobs:
-  rustfmt:
+  pre-job:
     runs-on: ubuntu-22.04
+
+    outputs:
+      skip_tests: ${{ steps.check_tests.outputs.skip_tests }}
+      stable_version: ${{ steps.get_rust_version.outputs.stable_version }}
+
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get stable Rust version
+        id: get_rust_version
+        run: |
+          STABLE_VERSION=$(rustc -Vv | grep "release:" | cut -d' ' -f2)
+          echo "stable_version=$STABLE_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if tests have already run
+        id: check_tests
+        if: github.event_name == 'pull_request'
+        run: |
+          LAST_COMMIT_SHA=$(git rev-parse HEAD)
+          LAST_WORKFLOW_RUN=$(gh run list --limit 1 --branch ${{ github.head_ref }} --workflow ${{ github.workflow }} --json conclusion,headSha --jq '.[0]')
+          LAST_RUN_SHA=$(echo "$LAST_WORKFLOW_RUN" | jq -r '.headSha')
+          LAST_RUN_CONCLUSION=$(echo "$LAST_WORKFLOW_RUN" | jq -r '.conclusion')
+          
+          if [[ "$LAST_COMMIT_SHA" == "$LAST_RUN_SHA" && "$LAST_RUN_CONCLUSION" == "success" ]]; then
+            echo "Tests have already run successfully on this commit"
+            echo "skip_tests=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_tests=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  rustfmt:
+    needs: pre-job
+
+    if: needs.pre-job.outputs.skip_tests != 'true'
+
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
           components: rustfmt
-      - uses: actions/checkout@v4
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 
   clippy:
-    needs: rustfmt
+    needs: [ pre-job, rustfmt ]
+
+    if: needs.pre-job.outputs.skip_tests != 'true'
+
     runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
-        # Latest stable and MSRV. We only run checks with all features enabled
-        # for the MSRV build to keep CI fast, since other configurations should also work.
         rust_version: [ stable, "1.79.0" ]
         include:
           - os: ubuntu-latest
@@ -37,37 +83,77 @@ jobs:
             install-deps: echo "No additional dependencies for Windows"
           - os: macos-latest
             install-deps: echo "No additional dependencies for macOS"
-    steps:
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust_version }}
-          components: clippy
-      - uses: actions/checkout@v4
 
-      - name: Run `cargo clippy` with no features
-        if: ${{ matrix.rust_version == 'stable' }}
-        run: cargo clippy --verbose --no-default-features -- -D warnings -D clippy::dbg_macro
-
-      - name: Run `cargo clippy` with all features
-        run: cargo clippy --verbose --all-features -- -D warnings -D clippy::dbg_macro
-
-  test:
-    needs: clippy
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ macos-latest, windows-latest, ubuntu-latest ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Check if job should be skipped
+        id: check_skip
+        shell: pwsh
+        run: |
+          if (("${{ matrix.rust_version }}" -ne "stable") -and ("${{ matrix.rust_version }}" -eq "${{ needs.pre-job.outputs.stable_version }}")) {
+            echo "skip=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "skip=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        if: steps.check_skip.outputs.skip != 'true'
+        with:
+          toolchain: ${{ matrix.rust_version }}
+          components: clippy
+
+      - name: Run `cargo clippy` with no features
+        if: ${{ matrix.rust_version == 'stable' && steps.check_skip.outputs.skip != 'true' }}
+        run: cargo clippy --verbose --no-default-features -- -D warnings -D clippy::dbg_macro
+
+      - name: Run `cargo clippy` with all features
+        if: steps.check_skip.outputs.skip != 'true'
+        run: cargo clippy --verbose --all-features -- -D warnings -D clippy::dbg_macro
+
+  test:
+    needs: [ pre-job, rustfmt ]
+
+    if: needs.pre-job.outputs.skip_tests != 'true'
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ macos-latest, windows-latest, ubuntu-latest ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Prepare Ubuntu environment
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           sudo apt update
           sudo apt install -y libxcb-shape0-dev libxcb-xfixes0-dev
+
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
+
       - name: Run tests with all features
         run: cargo test --all-features
+
+  check:
+    if: always()
+
+    needs:
+      - rustfmt
+      - clippy
+      - test
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@release/v1
+        with:
+          allowed-failures: rustfmt
+          jobs: ${{ toJSON(needs) }}

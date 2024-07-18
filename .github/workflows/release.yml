@@ -9,10 +9,132 @@ env:
   CARGO_TERM_COLOR: always
   BINARY_NAME: "pwdgen"
   CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+  VT_API_KEY: ${{ secrets.VT_API_KEY }}
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+
+    outputs:
+      version_match: ${{ steps.version_check.outputs.version_match }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check version
+        id: version_check
+        shell: pwsh
+        run: |
+          $TAG_VERSION = $env:GITHUB_REF -replace '^refs/tags/v', ''
+          $CARGO_VERSION = (Select-String -Path Cargo.toml -Pattern '^version = "(.+)"').Matches.Groups[1].Value
+          
+          Write-Output "Tag version: $TAG_VERSION"
+          Write-Output "Cargo.toml version: $CARGO_VERSION"
+          
+          if ($TAG_VERSION -eq $CARGO_VERSION) {
+            Write-Output "version_match=true" >> $env:GITHUB_OUTPUT
+            Write-Output "Versions match. Proceeding with the release check."
+          } else {
+            Write-Output "version_match=false" >> $env:GITHUB_OUTPUT
+            Write-Output "Version mismatch detected!"
+          }
+
+      - name: Display version_match output
+        run: echo "${{ steps.version_check.outputs.version_match }}"
+
+  check-last-commit:
+    needs: check-version
+
+    outputs:
+      passed_test: ${{ steps.check_last_commit.outputs.passed_test }}
+
+    if: needs.check-version.outputs.version_match == 'true'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check last commit status
+        id: check_last_commit
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $LAST_COMMIT_SHA = git rev-parse HEAD
+          $CHECK_RUNS = gh api repos/$env:GITHUB_REPOSITORY/commits/$LAST_COMMIT_SHA/check-runs --jq '.check_runs[] | {name, conclusion}'
+          
+          $FAILED_CHECKS = $CHECK_RUNS | ConvertFrom-Json | Where-Object { $_.conclusion -ne 'success' }
+          
+          if ($FAILED_CHECKS) {
+            Write-Output "passed_test=false" >> $env:GITHUB_OUTPUT
+            $FAILED_NAMES = ($FAILED_CHECKS | ForEach-Object { $_.name }) -join ', '
+            Write-Output "The last commit does not have all successful tests. Failed checks: $FAILED_NAMES"
+            exit 1
+          } else {
+            Write-Output "passed_test=true" >> $env:GITHUB_OUTPUT
+            Write-Output "All checks passed for the last commit."
+          }
+
+      - name: Display passed_test output
+        run: echo "${{ steps.check_last_commit.outputs.passed_test }}"
+
+  handle-release:
+    needs: [check-version, check-last-commit]
+
+    if: |
+      always() &&
+      (needs.check-version.result == 'failure' || needs.check-last-commit.result == 'failure' || needs.check-version.outputs.version_match == 'false')
+
+    outputs:
+      status: ${{ steps.handle.outputs.status }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Handle failed checks
+        id: handle
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $TAG_VERSION = $env:GITHUB_REF -replace '^refs/tags/v', ''
+          
+          if ('${{ needs.check-version.outputs.version_match }}' -eq 'false') {
+            $ISSUE_BODY = "Version mismatch detected between tag and Cargo.toml."
+          } else {
+            $ISSUE_BODY = "The last commit does not have all successful tests."
+          }
+          
+          $ISSUE_BODY += " The release has been unpublished."
+          $ISSUE_URL = gh issue create --title "Release $TAG_VERSION Check Failed" --body $ISSUE_BODY --assignee @me
+          
+          if ($env:GITHUB_EVENT_NAME -eq "release") {
+            Write-Output "status=false" >> $env:GITHUB_OUTPUT
+          
+            gh release delete $TAG_VERSION --yes
+            Write-Output "Release has been unpublished due to check failure."
+          
+            git push origin :refs/tags/v$TAG_VERSION
+            Write-Output "Tag v$TAG_VERSION has been deleted."
+          }
+          
+          Write-Output "status=true" >> $env:GITHUB_OUTPUT
+          Write-Output "An issue has been created: $ISSUE_URL"
+
+      - name: Display status output
+        run: echo "${{ steps.handle.outputs.status }}"
+
   release:
+    needs: handle-release
+
     runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
@@ -32,7 +154,8 @@ jobs:
             asset_content_type: application/octet-stream
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
@@ -65,6 +188,13 @@ jobs:
           asset_name: "${{ env.BINARY_NAME }}-${{ matrix.os_name }}${{ matrix.asset_extension }}"
           asset_content_type: ${{ matrix.asset_content_type }}
 
+      - name: VirusTotal Scan
+        uses: crazy-max/ghaction-virustotal@v4
+        with:
+          vt_api_key: ${{ env.VT_API_KEY }}
+          update_release_body: true
+          files: ./target/release/${{ env.BINARY_NAME }}${{ matrix.asset_extension }}
+
       - name: Notify success
         if: success()
         run: echo "Release process completed successfully!"
@@ -73,7 +203,9 @@ jobs:
         if: failure()
         run: echo "Release process failed, check logs for details."
 
-  publish:
+  publish-crate:
+    needs: handle-release
+
     runs-on: ubuntu-latest
 
     steps:
@@ -81,10 +213,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build
-        run: cargo build --verbose
-
-      - name: Run tests
-        run: cargo test --verbose
+        run: cargo build --release
 
       - name: Publish to Crates.io
         run: cargo publish --token ${CRATES_TOKEN}

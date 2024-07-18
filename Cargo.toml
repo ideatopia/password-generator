@@ -1,6 +1,6 @@
 [package]
 name = "ideatopia-password_generator"
-version = "1.0.2"
+version = "1.0.5"
 edition = "2021"
 authors = ["ideatopia <https://githubcom/ideatopia>", "Judicael AHYI <https://githubcom/ludndev>"]
 description = "Generates passwords with various complexities"
@@ -13,7 +13,7 @@ homepage = "https://crates.io/crates/ideatopia-password-generator"
 [dependencies]
 clap = { version = "4.5.9", features = ["derive"] }
 cli-clipboard = "0.4.0"
-rand = "0.8.5"
+fastrand = "2.1.0"
 self_update = "0.41.0"
 strum = { version = "0.26", features = ["derive"] }
 strum_macros = "0.26.4"
