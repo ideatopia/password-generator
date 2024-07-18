@@ -1,6 +1,6 @@
 [package]
 name = "ideatopia-password_generator"
-version = "1.0.5"
+version = "1.0.9"
 edition = "2021"
 authors = ["ideatopia <https://githubcom/ideatopia>", "Judicael AHYI <https://githubcom/ludndev>"]
 description = "Generates passwords with various complexities"
