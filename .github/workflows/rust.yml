@@ -90,12 +90,13 @@ jobs:
 
       - name: Check if job should be skipped
         id: check_skip
+        shell: pwsh
         run: |
-          if [ "${{ matrix.rust_version }}" != "stable" ] && [ "${{ matrix.rust_version }}" == "${{ needs.pre-job.outputs.stable_version }}" ]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "skip=false" >> $GITHUB_OUTPUT
-          fi
+          if (("${{ matrix.rust_version }}" -ne "stable") -and ("${{ matrix.rust_version }}" -eq "${{ needs.pre-job.outputs.stable_version }}")) {
+            echo "skip=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "skip=false" >> $env:GITHUB_OUTPUT
+          }
 
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         if: steps.check_skip.outputs.skip != 'true'
