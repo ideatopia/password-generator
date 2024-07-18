@@ -75,6 +75,7 @@ jobs:
             Write-Output "passed_test=false" >> $env:GITHUB_OUTPUT
             $FAILED_NAMES = ($FAILED_CHECKS | ForEach-Object { $_.name }) -join ', '
             Write-Output "The last commit does not have all successful tests. Failed checks: $FAILED_NAMES"
+            Write-Output "$MARKDOWN_CHECKS"
           } else {
             Write-Output "passed_test=true" >> $env:GITHUB_OUTPUT
             Write-Output "All checks passed for the last commit."
