@@ -118,14 +118,14 @@ jobs:
           $ISSUE_BODY = ""
           
           if ('${{ needs.check-version.outputs.result }}' -eq 'false') {
-            $ISSUE_BODY += "## Version\n"
+            $ISSUE_BODY += "## Version`n"
             $ISSUE_BODY += "Version mismatch detected between tag and Cargo.toml."
-            $ISSUE_BODY += " The release has been unpublished.\n"
+            $ISSUE_BODY += " The release has been unpublished.`n"
           }
           
           if ('${{ needs.check-last-commit.outputs.result }}' -eq 'false') {
-            $ISSUE_BODY += "## Tests\n"
-            $ISSUE_BODY += "The last commit does not have all successful tests.\n"
+            $ISSUE_BODY += "## Tests`n"
+            $ISSUE_BODY += "The last commit does not have all successful tests.`n"
             $ISSUE_BODY += "${{ needs.check-last-commit.outputs.markdown_checks }}"
           }
           
