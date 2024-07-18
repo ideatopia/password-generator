@@ -9,6 +9,7 @@ env:
   CARGO_TERM_COLOR: always
   BINARY_NAME: "pwdgen"
   CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+  VT_API_KEY: ${{ secrets.VT_API_KEY }}
 
 jobs:
   release:
@@ -64,6 +65,13 @@ jobs:
           asset_path: ./target/release/${{ env.BINARY_NAME }}${{ matrix.asset_extension }}
           asset_name: "${{ env.BINARY_NAME }}-${{ matrix.os_name }}${{ matrix.asset_extension }}"
           asset_content_type: ${{ matrix.asset_content_type }}
+
+      - name: VirusTotal Scan
+        uses: crazy-max/ghaction-virustotal@v4
+        with:
+          vt_api_key: ${{ env.VT_API_KEY }}
+          update_release_body: true
+          files: ./target/release/${{ env.BINARY_NAME }}${{ matrix.asset_extension }}
 
       - name: Notify success
         if: success()
