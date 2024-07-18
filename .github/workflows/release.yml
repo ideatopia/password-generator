@@ -69,7 +69,7 @@ jobs:
           $MARKDOWN_CHECKS = ($CHECK_RUNS | ConvertFrom-Json | ForEach-Object { "- **$($_.name)**: $($_.conclusion)" }) -join "`n"
 
           Write-Output "checks=$ALL_CHECKS" >> $env:GITHUB_OUTPUT
-          Write-Output "markdown_checks=$MARKDOWN_CHECKS" >> $env:GITHUB_OUTPUT
+          Write-Output "markdown_checks=`"$MARKDOWN_CHECKS`"" >> $env:GITHUB_OUTPUT
           
           if ($FAILED_CHECKS) {
             Write-Output "passed_test=false" >> $env:GITHUB_OUTPUT
