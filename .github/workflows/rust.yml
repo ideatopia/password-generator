@@ -16,10 +16,17 @@ jobs:
 
     outputs:
       skip_tests: ${{ steps.check_tests.outputs.skip_tests }}
+      stable_version: ${{ steps.get_rust_version.outputs.stable_version }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Get stable Rust version
+        id: get_rust_version
+        run: |
+          STABLE_VERSION=$(rustc -Vv | grep "release:" | cut -d' ' -f2)
+          echo "stable_version=$STABLE_VERSION" >> $GITHUB_OUTPUT
 
       - name: Check if tests have already run
         id: check_tests
@@ -38,33 +45,6 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  rust-stable:
-    needs: pre-job
-
-    runs-on: ubuntu-22.04
-
-    outputs:
-      status: ${{ steps.check_skip.skip }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Get stable Rust version
-        id: get_rust_version
-        run: |
-          STABLE_VERSION=$(rustc -Vv | grep "release:" | cut -d' ' -f2)
-          echo "stable_version=$STABLE_VERSION" >> $GITHUB_OUTPUT
-
-      - name: Check if job should be skipped
-        id: check_skip
-        run: |
-          if [ "${{ matrix.rust_version }}" != "stable" ] && [ "${{ matrix.rust_version }}" == "${{ steps.get_rust_version.outputs.stable_version }}" ]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "skip=false" >> $GITHUB_OUTPUT
-          fi
 
   rustfmt:
     needs: pre-job
@@ -86,9 +66,9 @@ jobs:
         run: cargo fmt --all -- --check
 
   clippy:
-    needs: [ pre-job, rust-stable, rustfmt ]
+    needs: [ pre-job, rustfmt ]
 
-    if: needs.pre-job.outputs.skip_tests != 'true' && needs.rust-stable.outputs.skip != 'true'
+    if: needs.pre-job.outputs.skip_tests != 'true'
 
     runs-on: ${{ matrix.os }}
 
@@ -108,22 +88,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Get stable Rust version
+        id: get_rust_version
+        run: |
+          STABLE_VERSION=$(rustc -Vv | grep "release:" | cut -d' ' -f2)
+          echo "stable_version=$STABLE_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if job should be skipped
+        id: check_skip
+        run: |
+          if [ "${{ matrix.rust_version }}" != "stable" ] && [ "${{ matrix.rust_version }}" == "${{ needs.pre-job.outputs.stable_version }}" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - uses: actions-rust-lang/setup-rust-toolchain@v1
+        if: steps.check_skip.outputs.skip != 'true'
         with:
           toolchain: ${{ matrix.rust_version }}
           components: clippy
 
       - name: Run `cargo clippy` with no features
-        if: ${{ matrix.rust_version == 'stable' }}
+        if: ${{ matrix.rust_version == 'stable' && steps.check_skip.outputs.skip != 'true' }}
         run: cargo clippy --verbose --no-default-features -- -D warnings -D clippy::dbg_macro
 
       - name: Run `cargo clippy` with all features
+        if: steps.check_skip.outputs.skip != 'true'
         run: cargo clippy --verbose --all-features -- -D warnings -D clippy::dbg_macro
 
   test:
-    needs: [ pre-job, rust-stable, rustfmt ]
+    needs: [ pre-job, rustfmt ]
 
-    if: needs.pre-job.outputs.skip_tests != 'true' && needs.rust-stable.outputs.skip != 'true'
+    if: needs.pre-job.outputs.skip_tests != 'true'
 
     runs-on: ${{ matrix.os }}
 
