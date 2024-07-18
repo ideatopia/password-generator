@@ -123,7 +123,7 @@ jobs:
             $ISSUE_BODY += "${{ needs.check-last-commit.outputs.markdown_checks }}"
           }
           
-          $ISSUE_URL = gh issue create --label bug --title "Release $TAG_VERSION Check Failed" --body $ISSUE_BODY --assignee "@me"
+          $ISSUE_URL = gh issue create --label bug --title "Release $($TAG_VERSION) Check Failed" --body $ISSUE_BODY --assignee "@me"
           
           if ($env:GITHUB_EVENT_NAME -eq "release") {
             Write-Output "status=false" >> $env:GITHUB_OUTPUT
