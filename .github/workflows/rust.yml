@@ -13,8 +13,10 @@ env:
 jobs:
   pre-job:
     runs-on: ubuntu-22.04
+
     outputs:
       skip_tests: ${{ steps.check_tests.outputs.skip_tests }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,26 +41,33 @@ jobs:
 
   rustfmt:
     needs: pre-job
+
     if: needs.pre-job.outputs.skip_tests != 'true'
+
     runs-on: ubuntu-22.04
+
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
           components: rustfmt
-      - uses: actions/checkout@v4
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 
   clippy:
     needs: [ pre-job, rustfmt ]
+
     if: needs.pre-job.outputs.skip_tests != 'true'
+
     runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
-        # Latest stable and MSRV. We only run checks with all features enabled
-        # for the MSRV build to keep CI fast, since other configurations should also work.
         rust_version: [ stable, "1.79.0" ]
         include:
           - os: ubuntu-latest
@@ -67,12 +76,15 @@ jobs:
             install-deps: echo "No additional dependencies for Windows"
           - os: macos-latest
             install-deps: echo "No additional dependencies for macOS"
+
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ matrix.rust_version }}
           components: clippy
-      - uses: actions/checkout@v4
 
       - name: Run `cargo clippy` with no features
         if: ${{ matrix.rust_version == 'stable' }}
@@ -82,23 +94,30 @@ jobs:
         run: cargo clippy --verbose --all-features -- -D warnings -D clippy::dbg_macro
 
   test:
-    needs: [ pre-job, clippy ]
+    needs: [ pre-job, rustfmt ]
+
     if: needs.pre-job.outputs.skip_tests != 'true'
+
     runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
         os: [ macos-latest, windows-latest, ubuntu-latest ]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Prepare Ubuntu environment
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           sudo apt update
           sudo apt install -y libxcb-shape0-dev libxcb-xfixes0-dev
+
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
+
       - name: Run tests with all features
         run: cargo test --all-features
