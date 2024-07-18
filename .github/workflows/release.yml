@@ -61,8 +61,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $TAG_COMMIT_SHA = git rev-list -n 1 $env:GITHUB_REF
-          $CHECK_RUNS = gh api repos/$env:GITHUB_REPOSITORY/commits/$TAG_COMMIT_SHA/check-runs --jq '.check_runs[] | {name, conclusion}'
+          $COMMIT_SHA = git rev-parse HEAD
+          $CHECK_RUNS = gh api repos/$env:GITHUB_REPOSITORY/commits/$COMMIT_SHA/check-runs --jq '.check_runs[] | {name, conclusion}'
           
           $FAILED_CHECKS = $CHECK_RUNS | ConvertFrom-Json | Where-Object { $_.conclusion -ne 'success' }
           $ALL_CHECKS = ($CHECK_RUNS | ConvertFrom-Json | ForEach-Object { "$($_.name): $($_.conclusion)" }) -join ', '
