@@ -130,7 +130,8 @@ jobs:
           }
           
           if ('${{ needs.check-version.outputs.result }}' -eq 'false' || '${{ needs.check-last-commit.outputs.result }}' -eq 'false') {
-            $ISSUE_URL = gh issue create --label bug --title "Release $($TAG_VERSION) Check Failed" --body "$ISSUE_BODY"
+            $ISSUE_BODY | Out-File -FilePath body.txt -Encoding utf8
+            $ISSUE_URL = gh issue create --label bug --title "Release $($TAG_VERSION) Check Failed" --body-file body.txt
         
             gh release delete $TAG_VERSION --yes
             Write-Output "Release has been unpublished due to check failure."
