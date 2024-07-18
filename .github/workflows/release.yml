@@ -139,10 +139,14 @@ jobs:
         
             git push origin :refs/tags/v$TAG_VERSION
             Write-Output "Tag v$TAG_VERSION has been deleted."
+          
+            exit 1
           }
           
           Write-Output "status=true" >> $env:GITHUB_OUTPUT
           Write-Output "An issue has been created: $ISSUE_URL"
+          
+          return
 
       - name: Display status output
         run: echo "${{ steps.handle.outputs.status }}"
