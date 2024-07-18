@@ -65,8 +65,8 @@ jobs:
           $CHECK_RUNS = gh api repos/$env:GITHUB_REPOSITORY/commits/$LAST_COMMIT_SHA/check-runs --jq '.check_runs[] | {name, conclusion}'
           
           $FAILED_CHECKS = $CHECK_RUNS | ConvertFrom-Json | Where-Object { $_.conclusion -ne 'success' }
-          $ALL_CHECKS = $CHECK_RUNS | ConvertFrom-Json | ForEach-Object { "$($_.name): $($_.conclusion)" } -join ', '
-          $MARKDOWN_CHECKS = $CHECK_RUNS | ConvertFrom-Json | ForEach-Object { "- **$($_.name)**: $($_.conclusion)" } -join "`n"
+          $ALL_CHECKS = ($CHECK_RUNS | ConvertFrom-Json | ForEach-Object { "$($_.name): $($_.conclusion)" }) -join ', '
+          $MARKDOWN_CHECKS = ($CHECK_RUNS | ConvertFrom-Json | ForEach-Object { "- **$($_.name)**: $($_.conclusion)" }) -join "`n"
 
           Write-Output "checks=$ALL_CHECKS" >> $env:GITHUB_OUTPUT
           Write-Output "markdown_checks=$MARKDOWN_CHECKS" >> $env:GITHUB_OUTPUT
