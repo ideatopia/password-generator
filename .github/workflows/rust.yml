@@ -88,12 +88,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Get stable Rust version
-        id: get_rust_version
-        run: |
-          STABLE_VERSION=$(rustc -Vv | grep "release:" | cut -d' ' -f2)
-          echo "stable_version=$STABLE_VERSION" >> $GITHUB_OUTPUT
-
       - name: Check if job should be skipped
         id: check_skip
         run: |
