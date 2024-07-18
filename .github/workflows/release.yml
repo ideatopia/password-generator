@@ -214,7 +214,8 @@ jobs:
         with:
           vt_api_key: ${{ env.VT_API_KEY }}
           update_release_body: true
-          files: ./target/release/${{ env.BINARY_NAME }}${{ matrix.asset_extension }}
+          files: |
+            ./target/release/${{ env.BINARY_NAME }}${{ matrix.asset_extension }}
 
       - name: Notify success
         if: success()
