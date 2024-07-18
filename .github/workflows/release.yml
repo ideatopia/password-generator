@@ -12,7 +12,52 @@ env:
   VT_API_KEY: ${{ secrets.VT_API_KEY }}
 
 jobs:
+  version-check:
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check semver
+        uses: obi1kenobi/cargo-semver-checks-action@v2
+
+      - name: Check version
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Extract tag version (remove 'v' prefix)
+          $TAG_VERSION = $env:GITHUB_REF -replace '^refs/tags/v', ''
+
+          # Extract version from Cargo.toml
+          $CARGO_VERSION = (Select-String -Path Cargo.toml -Pattern '^version = "(.+)"').Matches.Groups[1].Value
+
+          Write-Output "Tag version: $TAG_VERSION"
+          Write-Output "Cargo.toml version: $CARGO_VERSION"
+
+          if ($TAG_VERSION -ne $CARGO_VERSION) {
+            Write-Output "Version mismatch detected!"
+
+            # Create an issue
+            $ISSUE_BODY = "Version mismatch detected between tag ($TAG_VERSION) and Cargo.toml ($CARGO_VERSION)."
+            $ISSUE_URL = gh issue create --title "Version Mismatch in Release $TAG_VERSION" --body $ISSUE_BODY --assignee @me
+
+            # If this is a release, change it to a draft
+            if ($env:GITHUB_EVENT_NAME -eq "release") {
+              gh release edit $TAG_VERSION --draft
+              Write-Output "Release has been changed to draft due to version mismatch."
+            }
+
+            Write-Output "An issue has been created: $ISSUE_URL"
+            exit 1
+          } else {
+            Write-Output "Versions match. Proceeding with the release."
+          }
+
   release:
+    needs: version-check
+
     runs-on: ${{ matrix.os }}
 
     strategy:
