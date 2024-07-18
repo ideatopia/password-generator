@@ -12,7 +12,7 @@ env:
   VT_API_KEY: ${{ secrets.VT_API_KEY }}
 
 jobs:
-  version-check:
+  check-version:
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -56,7 +56,7 @@ jobs:
           }
 
   release:
-    needs: version-check
+    needs: check-version
 
     runs-on: ${{ matrix.os }}
 
@@ -128,7 +128,7 @@ jobs:
         run: echo "Release process failed, check logs for details."
 
   publish-crate:
-    needs: [version-check, release]
+    needs: [check-version, release]
 
     runs-on: ubuntu-latest
 
