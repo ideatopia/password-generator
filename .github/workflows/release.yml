@@ -154,6 +154,8 @@ jobs:
   release:
     needs: handle-release
 
+    if: needs.handle-release.outputs.status == 'true'
+
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -226,6 +228,8 @@ jobs:
 
   publish-crate:
     needs: handle-release
+
+    if: needs.handle-release.outputs.status == 'true'
 
     runs-on: ubuntu-latest
 
